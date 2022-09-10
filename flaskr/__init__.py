@@ -2,6 +2,13 @@ from flask import Flask
 from flask_restful import Resource, Api
 from flask_cors import CORS
 import requests
+from models import News
+
+
+app.debug=True
+moment = Moment(app)
+app.config.from_object('config')
+db.init_app(app)
 
 def create_app(test_config=None):
     # create and configure the app
@@ -40,5 +47,7 @@ def create_app(test_config=None):
         # print(requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(32741800)+'.json?print=pretty').json())
             
         return "Got Here"
+    
+    
     
     return app
