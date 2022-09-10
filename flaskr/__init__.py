@@ -25,11 +25,20 @@ def create_app(test_config=None):
     ## Get News Endpoint
     @app.route('/news', methods=['GET'])
     def get_news():
-        news = requests.get('https://hacker-news.firebaseio.com/v0/topstories.json')
+        newsId = requests.get('https://hacker-news.firebaseio.com/v0/topstories.json').json()
         
-        if not news :
+        print(newsId[499])
+        print((len(newsId)-1))
+        
+        
+        
+        if not newsId :
             return(404, 'News not found')
         
-        return news.json()
+        for id in newsId:
+            print(requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(id)+'.json?print=pretty').json())
+        # print(requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(32741800)+'.json?print=pretty').json())
+            
+        return "Got Here"
     
     return app
