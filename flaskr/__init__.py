@@ -1,7 +1,7 @@
 # from crypt import methods
 import json
 import os
-from flask import Flask
+from flask import Flask, request
 from flask_restful import abort
 from flask_cors import CORS
 import requests
@@ -84,6 +84,20 @@ scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(sync_news,'interval',minutes=5)
 scheduler.start()
 
+
+NEWS_PER_PAGE = 5
+
+def paginate_news(selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page  - 1) * NEWS_PER_PAGE
+    end = start + NEWS_PER_PAGE
+
+    news = [new_news.serialize() for new_news in selection]
+    current_news = news[start:end]
+
+    return current_news
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -107,21 +121,18 @@ def create_app(test_config=None):
     ## Get News Endpoint
     @app.route('/news', methods=['GET'])
     def get_news():
-        newsId = requests.get('https://hacker-news.firebaseio.com/v0/topstories.json').json()
+        get_news = News.query.order_by(News.id).all()
+        # print(get_news)
         
-        print(newsId[499])
-        print((len(newsId)-1))
+        if len(get_news) == 0 :
+            abort(404)
+
+        news = paginate_news(get_news)
+        print(news)
         
-        
-        
-        if not newsId :
-            return(404, 'News not found')
-        
-        for id in newsId:
-            print(requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(id)+'.json?print=pretty').json())
-        # print(requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(32741800)+'.json?print=pretty').json())
-            
-        return "Got Here"
+        return {
+            "News": news
+        }
     
    
             

@@ -22,11 +22,11 @@ class News(db.Model):
     __tablename__ = 'news'
     
     id = Column(Integer, primary_key=True)
-    # deleted = Column(Boolean, nullable=True)
+    deleted = Column(Boolean, nullable=True)
     type = Column(String(250), nullable=False)
     by = Column(String(100), nullable=True)
     time = Column(Integer, nullable=True)
-    # dead = Column(Boolean, nullable=True)
+    dead = Column(Boolean, nullable=True)
     kids = Column(JSON, nullable=False)
     parent = Column(Integer, nullable=True)
     text = Column(String, nullable=True)
@@ -56,6 +56,24 @@ class News(db.Model):
     def insert(self):
         db.session.add(self)
         db.session.commit()
+        
+    def serialize(self):
+        return {
+            "id": self.id,
+            "deleted": self.deleted,
+            "type": self.type,
+            "by": self.by,
+            "time": self.time,
+            "dead": self.dead,
+            "kids": self.kids,
+            "parent": self.parent,
+            "text": self.text,
+            "url": self.url,
+            "title": self.title,
+            "parts": self.parts,
+            "descendants": self.descendants,
+            "score": self.score
+            }
         
     def __repr__(self):
         return f"<statement>"
