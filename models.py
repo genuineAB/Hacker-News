@@ -1,27 +1,63 @@
-from flask import Flask
+import os
+from sqlalchemy import Column, String, Integer, Boolean, JSON
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 
-app = Flask(__name__)
+# database_name = 'hacker_news'
+database_path = 'postgresql://postgres:12345@localhost:5432/hacker_news'
+
+
 db = SQLAlchemy()
-migrate = Migrate(app, db)
+
+def setup_db(app, database_path=database_path):
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_path
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    db.app = app
+    db.init_app(app)
+    migrate = Migrate(app, db)
+    db.create_all()
 
 class News(db.Model):
     __tablename__ = 'news'
     
-    id = db.Column(db.Integer, primary_key=True)
-    deleted = db.Column(db.Boolean, nullable=True)
-    type = db.Column(db.String(250), nullable=False)
-    by = db.Column(db.String(100), nullable=True)
-    time = db.Column(db.Integer, nullable=True)
-    dead = db.Column(db.Boolean, nullable=True)
-    kids = db.Column(db.JSON, nullable=False)
-    parent = db.Column(db.Integer, nullable=True)
-    text = db.Column(db.String, nullable=True)
-    url = db.Column(db.String, nullable=True)
-    title = db.Column(db.String, nullable=True)
-    parts = db.Column(db.JSON, nullable=True)
-    descendants = db.Column(db.Integer, nullable=True)
-    score = db.Column(db.Integer, nullable=True)
+    id = Column(Integer, primary_key=True)
+    # deleted = Column(Boolean, nullable=True)
+    type = Column(String(250), nullable=False)
+    by = Column(String(100), nullable=True)
+    time = Column(Integer, nullable=True)
+    # dead = Column(Boolean, nullable=True)
+    kids = Column(JSON, nullable=False)
+    parent = Column(Integer, nullable=True)
+    text = Column(String, nullable=True)
+    url = Column(String, nullable=True)
+    title = Column(String, nullable=True)
+    parts = Column(JSON, nullable=True)
+    descendants = Column(Integer, nullable=True)
+    score = Column(Integer, nullable=True)
+    
+    def __init__(self, id, deleted, by, time, dead, kids, parent, text, url, type, title, parts, descendants, score):
+        self.id = id
+        self.deleted = deleted
+        self.type = type
+        self.by = by
+        self.time = time
+        self.dead = dead
+        self.kids = kids
+        self.parent = parent
+        self.text = text
+        self.url = url
+        self.title = title
+        self.parts = parts
+        self.descendants = descendants
+        self.score = score
+        
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+        
+    def __repr__(self):
+        return f"<statement>"
+
     
