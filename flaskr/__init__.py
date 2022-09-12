@@ -93,7 +93,7 @@ scheduler.add_job(sync_news,'interval',minutes=5)
 scheduler.start()
 
 
-NEWS_PER_PAGE = 50
+NEWS_PER_PAGE = 5
 
 def paginate_news(selection):
     page = request.args.get('page', 1, type=int)
@@ -236,15 +236,11 @@ def create_app(test_config=None):
             new_time = time()
             new_deleted = body.get("deleted", None)
             new_type = body.get("type", None)
-            if body["by"]:
-                new_by = body.get("by", None)
+            new_by = body.get("by", None)
             new_dead = body.get("dead", None)
-            if body["kids"]:
-                new_kids = body.get("kids", None)
-            if body["parent"]:
-                new_parent = body.get("parent", None)
-            if body["text"]:
-                new_text = body.get("text", None) 
+            new_kids = body.get("kids", None)
+            new_parent = body.get("parent", None)
+            new_text = body.get("text", None) 
             new_url = body.get("url", None)
             new_title = body.get("title", None)
             new_parts = body.get("parts", None)
