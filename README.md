@@ -12,18 +12,12 @@ This project's goal is to make a web app to make it easier to navigate the news.
 
     3. PIP Dependencies - Once your virtual environment is setup and running, install the required dependencies:
 
-    ```
-    pip install -r requirements.txt
-    
-    ```
+    ``pip install -r requirements.txt ``
 
 ## SETUP DATABASE
     The database used for this application is postgresql. With Postgres running, create a hacker_news database:
 
-    ```
-    CREATE DATABASE hacker_news
-
-    ```
+    `` CREATE DATABASE hacker_news ``
 
 ## RUN THE SERVER
     From within the ./src directory first ensure you are working using your created virtual environment.
