@@ -62,7 +62,10 @@ class News(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
-         
+    
+    def update(self):
+        db.session.commit()
+        
     def serialize(self):
         return {
             "id": self.id,

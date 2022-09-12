@@ -1,4 +1,6 @@
 # from crypt import methods
+from datetime import datetime
+import calendar
 import json
 import os
 from flask import Flask, request
@@ -9,6 +11,12 @@ from models import News
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from models import setup_db, News
+
+# import calendar
+# import datetime
+def time():
+    date = datetime.utcnow()
+    utc_time = calendar.timegm(date.utctimetuple())
 
 
 
@@ -148,7 +156,7 @@ def create_app(test_config=None):
         body = request.get_json()
 
         new_id = body.get("id")
-        new_time = body.get("time", None)
+        new_time = time()
         new_deleted = body.get("deleted", None)
         new_type = body.get("type", None)
         new_by = body.get("by", None)
@@ -161,7 +169,7 @@ def create_app(test_config=None):
         new_parts = body.get("parts", None)
         new_descendants =body.get("descendants", None)
         new_score = body.get("score", None)
-        new_created = body.get("created")
+        new_created = True
         search = body.get("search_term", None)
         
         try:
@@ -195,7 +203,9 @@ def create_app(test_config=None):
             if news is None:
                 abort(404)
             
+            ## Abort Delete operation if news was received from hackers API
             if news.created != True:
+                print("Got Here")
                 abort(405)
                 
             news.delete()
@@ -207,7 +217,52 @@ def create_app(test_config=None):
                 abort(422)
             }
     
-    
+    @app.route('/news/<int:news_id>', methods=['PUT'])
+    def update_news(news_id):
+        news = News.query.filter(News.id==news_id).one_or_none() 
+        
+        if news is None:
+            abort(404)
+        
+        ## Abort UPDATE operation if news was received from hackers API
+        if news.created != True:
+            abort(405)
+        
+        try: 
+            body = request.get_json()
+
+            
+            new_id = news_id
+            new_time = time()
+            new_deleted = body.get("deleted", None)
+            new_type = body.get("type", None)
+            if body["by"]:
+                new_by = body.get("by", None)
+            new_dead = body.get("dead", None)
+            if body["kids"]:
+                new_kids = body.get("kids", None)
+            if body["parent"]:
+                new_parent = body.get("parent", None)
+            if body["text"]:
+                new_text = body.get("text", None) 
+            new_url = body.get("url", None)
+            new_title = body.get("title", None)
+            new_parts = body.get("parts", None)
+            new_descendants =body.get("descendants", None)
+            new_score = body.get("score", None)
+            new_created = True
+            
+            news = News(id=new_id, time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score, created=new_created)
+            
+            news.update()
+            return {
+                "success": True,
+                "msg": "News Updated"
+            }
+        
+        except:
+            abort(422, "Got Here")
+        
     ### Handling Errors
     @app.errorhandler(404)
     def not_found(error):
