@@ -20,7 +20,7 @@ def sync_news():
 
     try:
         id = 0
-        while id < 100:
+        while id < 10:
             body = requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(newsId[id])+'.json?print=pretty').json()
             
             new_id = body["id"]
@@ -64,11 +64,11 @@ def sync_news():
                 new_score = body["score"]
             else: 
                 new_descendants = None
-            
+            new_created = False
             new = News.query.filter_by(id=new_id).first()
             if new is None:
                 print("Got Here")
-                news = News(id=new_id, time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score)
+                news = News(id=new_id, time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score, created=new_created)
                 news.insert() 
             else:
                 print("Viola")   
@@ -78,7 +78,7 @@ def sync_news():
             "success": True
         }
     except:
-        abort(404, "Not Found")
+        abort(404)
 
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(sync_news,'interval',minutes=5)
@@ -146,10 +146,11 @@ def create_app(test_config=None):
     @app.route('/news', methods=['POST'])
     def post_news():
         body = request.get_json()
-        
+
+        new_id = body.get("id")
         new_time = body.get("time", None)
         new_deleted = body.get("deleted", None)
-        new_type = body.get("type")
+        new_type = body.get("type", None)
         new_by = body.get("by", None)
         new_dead = body.get("dead", None)
         new_kids = body.get("kids", None)
@@ -160,6 +161,7 @@ def create_app(test_config=None):
         new_parts = body.get("parts", None)
         new_descendants =body.get("descendants", None)
         new_score = body.get("score", None)
+        new_created = body.get("created")
         search = body.get("search_term", None)
         
         try:
@@ -173,7 +175,7 @@ def create_app(test_config=None):
                 })
                 
             else:
-                news = News( time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score)
+                news = News(id=new_id, time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score, created=new_created)
                 news.insert() 
                 
                 return {
@@ -181,9 +183,64 @@ def create_app(test_config=None):
                 }
             
         except:
-            abort(422, "aborted")
+            abort(422, 'Got Here')
         
+    ###
+    @app.route('/news/<int:news_id>', methods=['DELETE'])
+    def delete_news(news_id):
+        try:
+            news = News.query.filter(News.id==news_id).one_or_none() 
+            print(news.created)
+            
+            if news is None:
+                abort(404)
+            
+            if news.created != True:
+                print("Got Here")
+                abort(405)
+                
+            news.delete()
+            return {
+                'success': True
+            }
+        except:
+            return{
+                abort(422, "Got Here")
+            }
+    
+    
+    ### Handling Errors
+    @app.errorhandler(404)
+    def not_found(error):
+        return({
+            'success': False,
+            'error': 404,
+            'message': 'Resource not found'
+        }), 404
         
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return{
+            'success': False,
+            'error': 422,
+            'message': 'Could not process request'
+        },422
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return{
+            'success': False,
+            'error': 400,
+            'message': 'Bad Request, Make adjustment'
+        },400
+        
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        return{
+            'success': False,
+            'error': 500,
+            'message': 'Server Currently Down'
+        }, 500
         
     
     return app

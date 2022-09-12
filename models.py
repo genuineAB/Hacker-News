@@ -35,8 +35,9 @@ class News(db.Model):
     parts = Column(JSON, nullable=True)
     descendants = Column(Integer, nullable=True)
     score = Column(Integer, nullable=True)
+    created = Column(Boolean, nullable=False)
     
-    def __init__(self, id, deleted, by, time, dead, kids, parent, text, url, type, title, parts, descendants, score):
+    def __init__(self, id, deleted, by, time, dead, kids, parent, text, url, type, title, parts, descendants, score, created):
         self.id = id
         self.deleted = deleted
         self.type = type
@@ -51,6 +52,7 @@ class News(db.Model):
         self.parts = parts
         self.descendants = descendants
         self.score = score
+        self.created = created
         
 
     def insert(self):
@@ -72,7 +74,8 @@ class News(db.Model):
             "title": self.title,
             "parts": self.parts,
             "descendants": self.descendants,
-            "score": self.score
+            "score": self.score,
+            "created": self.created
             }
         
     def __repr__(self):
