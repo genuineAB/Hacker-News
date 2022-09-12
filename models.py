@@ -27,7 +27,7 @@ class News(db.Model):
     by = Column(String(100), nullable=True)
     time = Column(Integer, nullable=True)
     dead = Column(Boolean, nullable=True)
-    kids = Column(JSON, nullable=False)
+    kids = Column(JSON, nullable=True)
     parent = Column(Integer, nullable=True)
     text = Column(String, nullable=True)
     url = Column(String, nullable=True)

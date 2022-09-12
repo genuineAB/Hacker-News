@@ -20,7 +20,7 @@ def sync_news():
 
     try:
         id = 0
-        while id < 10:
+        while id < 100:
             body = requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(newsId[id])+'.json?print=pretty').json()
             
             new_id = body["id"]
@@ -85,7 +85,7 @@ scheduler.add_job(sync_news,'interval',minutes=5)
 scheduler.start()
 
 
-NEWS_PER_PAGE = 5
+NEWS_PER_PAGE = 50
 
 def paginate_news(selection):
     page = request.args.get('page', 1, type=int)
@@ -121,23 +121,67 @@ def create_app(test_config=None):
     ## Get News Endpoint
     @app.route('/news', methods=['GET'])
     def get_news():
-        get_news = News.query.order_by(News.id).all()
-        # print(get_news)
-        
-        if len(get_news) == 0 :
-            abort(404)
+        try:
+            
+            get_news = News.query.order_by(News.id).all()
+            # print(get_news)
+            
+            if len(get_news) == 0 :
+                abort(404)
 
-        news = paginate_news(get_news)
-        print(news)
-        
-        return {
-            "News": news
-        }
-    
+            news = paginate_news(get_news)
+            print(news)
+            
+            return {
+                "News": news
+            }
+
+        except:
+            abort(422)
    
             
         
+        ## POST and SEARCH METHOD
         
+    @app.route('/news', methods=['POST'])
+    def post_news():
+        body = request.get_json()
+        
+        new_time = body.get("time", None)
+        new_deleted = body.get("deleted", None)
+        new_type = body.get("type")
+        new_by = body.get("by", None)
+        new_dead = body.get("dead", None)
+        new_kids = body.get("kids", None)
+        new_parent = body.get("parent", None)
+        new_text = body.get("text", None) 
+        new_url = body.get("url", None)
+        new_title = body.get("title", None)
+        new_parts = body.get("parts", None)
+        new_descendants =body.get("descendants", None)
+        new_score = body.get("score", None)
+        search = body.get("search_term", None)
+        
+        try:
+            if search:
+                
+                news = News.query.order_by(News.id).filter(News.text.ilike("%{}%".format(search))).all()
+                search_result = [new_news.serialize() for new_news in news]
+
+                return ({
+                    "News": search_result
+                })
+                
+            else:
+                news = News( time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score)
+                news.insert() 
+                
+                return {
+                    'success': True
+                }
+            
+        except:
+            abort(422, "aborted")
         
         
         
