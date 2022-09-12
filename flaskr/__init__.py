@@ -196,7 +196,6 @@ def create_app(test_config=None):
                 abort(404)
             
             if news.created != True:
-                print("Got Here")
                 abort(405)
                 
             news.delete()
@@ -205,7 +204,7 @@ def create_app(test_config=None):
             }
         except:
             return{
-                abort(422, "Got Here")
+                abort(422)
             }
     
     
@@ -233,7 +232,15 @@ def create_app(test_config=None):
             'error': 400,
             'message': 'Bad Request, Make adjustment'
         },400
-        
+     
+    @app.errorhandler(405)
+    def not_allowed(error):
+        return{
+            'success': False,
+            'error': 405,
+            'message': 'Method Not Allowed'
+        }, 405
+           
     @app.errorhandler(500)
     def internal_server_error(error):
         return{

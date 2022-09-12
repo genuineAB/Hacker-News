@@ -58,7 +58,11 @@ class News(db.Model):
     def insert(self):
         db.session.add(self)
         db.session.commit()
-        
+       
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+         
     def serialize(self):
         return {
             "id": self.id,
