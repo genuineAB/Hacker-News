@@ -28,7 +28,7 @@ def sync_news():
 
     try:
         id = 0
-        while id < 10:
+        while id < 100:
             body = requests.get('https://hacker-news.firebaseio.com/v0/item/'+str(newsId[id])+'.json?print=pretty').json()
             
             new_id = body["id"]
@@ -75,11 +75,13 @@ def sync_news():
             new_created = False
             new = News.query.filter_by(id=new_id).first()
             if new is None:
-                print("Got Here")
+                
                 news = News(id=new_id, time=new_time, by=new_by, deleted=new_deleted, type=new_type, dead=new_dead, kids=new_kids, parent=new_parent, text=new_text, url=new_url, title=new_title, parts=new_parts, descendants=new_descendants, score=new_score, created=new_created)
-                news.insert() 
+                news.insert()   
+                print("New news added to db") 
+            
             else:
-                print("Viola")   
+                print("News Already Exist")
             
             id += 1
         return {
@@ -93,7 +95,7 @@ scheduler.add_job(sync_news,'interval',minutes=5)
 scheduler.start()
 
 
-NEWS_PER_PAGE = 5
+NEWS_PER_PAGE = 20
 
 def paginate_news(selection):
     page = request.args.get('page', 1, type=int)
@@ -132,13 +134,11 @@ def create_app(test_config=None):
         try:
             
             get_news = News.query.order_by(News.id).all()
-            # print(get_news)
             
             if len(get_news) == 0 :
                 abort(404)
 
             news = paginate_news(get_news)
-            print(news)
             
             return {
                 "News": news
@@ -187,11 +187,12 @@ def create_app(test_config=None):
                 news.insert() 
                 
                 return {
-                    'success': True
+                    'success': True,
+                    "msg": "News Added"
                 }
             
         except:
-            abort(422, 'Got Here')
+            abort(422)
         
     ###
     @app.route('/news/<int:news_id>', methods=['DELETE'])
@@ -205,12 +206,12 @@ def create_app(test_config=None):
             
             ## Abort Delete operation if news was received from hackers API
             if news.created != True:
-                print("Got Here")
                 abort(405)
                 
             news.delete()
             return {
-                'success': True
+                'success': True,
+                "msg": "News Deleted"
             }
         except:
             return{
@@ -257,7 +258,7 @@ def create_app(test_config=None):
             }
         
         except:
-            abort(422, "Got Here")
+            abort(422)
         
     ### Handling Errors
     @app.errorhandler(404)
